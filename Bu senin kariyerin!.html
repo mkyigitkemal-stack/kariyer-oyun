@@ -1,0 +1,277 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Career Mode FM</title>
+
+<style>
+body{
+font-family:Arial;
+margin:0;
+background:radial-gradient(circle at top,#141414,#000);
+color:white;
+text-align:center;
+}
+
+.card{
+background:rgba(30,30,30,0.92);
+margin:12px auto;
+padding:18px;
+width:92%;
+max-width:650px;
+border-radius:18px;
+box-shadow:0 0 20px rgba(0,255,120,0.1);
+}
+
+h2,h3{color:#00e676}
+
+input,select{
+width:100%;
+padding:12px;
+margin-top:8px;
+border-radius:10px;
+border:none;
+background:#111;
+color:white;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:8px;
+border:none;
+border-radius:12px;
+background:linear-gradient(90deg,#00c853,#00e676);
+color:black;
+font-weight:bold;
+}
+
+#log{
+margin-top:10px;
+padding:10px;
+background:#111;
+border-radius:10px;
+color:#ffd54f;
+}
+
+#stats{
+margin-top:10px;
+padding:12px;
+background:#0d0d0d;
+border-radius:12px;
+color:#b0bec5;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card" id="menu">
+<h2>⚽ CAREER MODE</h2>
+
+<input id="name" placeholder="Oyuncu adı">
+
+<!-- 🔥 YAŞ EKLENDİ -->
+<input id="startAge" type="number" min="15" max="40" value="16" placeholder="Başlangıç yaşı">
+
+<select id="nation">
+<option>Türkiye</option>
+<option>England</option>
+<option>Spain</option>
+<option>Italy</option>
+<option>Germany</option>
+<option>France</option>
+</select>
+
+<select id="diff">
+<option value="easy">Easy</option>
+<option value="medium">Medium</option>
+<option value="hard">Hard</option>
+<option value="extreme">Extreme</option>
+</select>
+
+<select id="pos">
+<option>ST</option>
+<option>CAM</option>
+<option>CM</option>
+<option>CB</option>
+<option>GK</option>
+</select>
+
+<button onclick="start()">START</button>
+</div>
+
+<div class="card" id="game" style="display:none">
+
+<h3 id="info"></h3>
+
+<button onclick="playMatch()">Maç</button>
+<button onclick="playSeason()">Sezon</button>
+<button onclick="nationalMatch()">Milli Maç</button>
+<button onclick="worldCup()">Dünya Kupası</button>
+
+<p id="log"></p>
+<p id="stats"></p>
+
+</div>
+
+<script>
+
+// =====================
+let clubs=[
+"Galatasaray","Fenerbahçe","Beşiktaş","Real Madrid","Barcelona",
+"Man City","PSG","Bayern","Inter","Liverpool","Chelsea","Arsenal"
+];
+
+// =====================
+let player="",club="",nation="",difficulty="",position="";
+let age=16,year=2026;
+let goals=0,assists=0,matches=0;
+let ratingSum=0;
+let form=6;
+let experience=0;
+let salary=1000;
+let value=500000;
+let nationalGoals=0;
+let worldCupStage="yok";
+
+let retired=false;
+
+// =====================
+function start(){
+
+player=document.getElementById("name").value;
+age=parseInt(document.getElementById("startAge").value); // 🔥 FIX
+
+nation=document.getElementById("nation").value;
+difficulty=document.getElementById("diff").value;
+position=document.getElementById("pos").value;
+
+club=clubs[Math.floor(Math.random()*clubs.length)];
+
+document.getElementById("menu").style.display="none";
+document.getElementById("game").style.display="block";
+
+update();
+}
+
+// =====================
+function getChance(){
+let base=(form+experience)/70;
+if(position=="ST") base*=1.6;
+if(position=="CAM") base*=1.2;
+if(position=="CB") base*=0.3;
+if(difficulty=="hard") base*=0.6;
+if(difficulty=="extreme") base*=0.3;
+return base;
+}
+
+// =====================
+function playMatch(){
+
+if(retired) return;
+
+experience+=0.3;
+
+let g=0,a=0;
+
+if(Math.random()<getChance()) g=1;
+if(Math.random()<0.3) a=1;
+
+goals+=g;
+assists+=a;
+matches++;
+
+ratingSum+=6+Math.random()*3;
+
+form+=(g+a)*0.4;
+form-=0.2;
+
+salary+=(g+a)*120;
+value+=(g*30000+a*20000);
+
+update();
+}
+
+// =====================
+function playSeason(){
+
+if(retired) return;
+
+for(let i=0;i<34;i++) playMatch();
+
+age++;
+year++;
+
+// 🔥 EMEKLİLİK SİSTEMİ
+if(age >= 42){
+retired=true;
+document.getElementById("log").innerHTML="🏁 EMEKLİ OLDUN (42 yaş)";
+return;
+}
+
+document.getElementById("log").innerHTML="🏁 Sezon bitti";
+}
+
+// =====================
+function nationalMatch(){
+
+if(age<18 || age>36){
+document.getElementById("log").innerHTML="❌ Milli takım yok";
+return;
+}
+
+let g=Math.random()<0.5?1:0;
+
+nationalGoals+=g;
+
+document.getElementById("log").innerHTML="🌍 Milli maç oynandı";
+
+update();
+}
+
+// =====================
+function worldCup(){
+
+if(age<18 || age>36){
+document.getElementById("log").innerHTML="❌ Kadro dışı";
+return;
+}
+
+let p=form+experience+Math.random()*10;
+
+if(p>25) worldCupStage="🏆 ŞAMPİYON";
+else if(p>22) worldCupStage="Final";
+else if(p>18) worldCupStage="Yarı final";
+else if(p>15) worldCupStage="Çeyrek final";
+else worldCupStage="Grup";
+
+document.getElementById("log").innerHTML="🏆 WC: "+worldCupStage;
+
+update();
+}
+
+// =====================
+function update(){
+
+let avg=(ratingSum/matches||0).toFixed(2);
+
+document.getElementById("info").innerHTML=
+`📅 ${year} | 👤 ${player} | 🏟 ${club} | 📍 ${position} | 🎂 ${age}`;
+
+document.getElementById("stats").innerHTML=
+`⚽ Gol: ${goals}<br>
+🎯 Asist: ${assists}<br>
+🏟 Maç: ${matches}<br>
+⭐ Rating: ${avg}<br>
+💰 Maaş: ${salary}<br>
+💎 Değer: ${value}<br>
+🌍 Milli Gol: ${nationalGoals}<br>
+🏆 WC: ${worldCupStage}`;
+}
+
+</script>
+
+</body>
+</html>
