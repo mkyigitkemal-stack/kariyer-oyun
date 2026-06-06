@@ -110,31 +110,36 @@ color:#b0bec5;
 
 <script>
 
-// =====================
 let clubs=[
 "Galatasaray","Fenerbahçe","Beşiktaş","Real Madrid","Barcelona",
 "Man City","PSG","Bayern","Inter","Liverpool","Chelsea","Arsenal"
 ];
 
-// =====================
 let player="",club="",nation="",difficulty="",position="";
-let age=16,year=2026;
+
+let age=16;
+let year=2026;
+let retirementAge=41;
+let retired=false;
+
 let goals=0,assists=0,matches=0;
 let ratingSum=0;
 let form=6;
 let experience=0;
 let salary=1000;
 let value=500000;
+
 let nationalGoals=0;
 let worldCupStage="yok";
 
-// transfer
 let offers=[];
 
-// =====================
 function start(){
 player=document.getElementById("name").value;
 if(!player) return alert("İsim gir!");
+
+age=16;
+retired=false;
 
 nation=document.getElementById("nation").value;
 difficulty=document.getElementById("diff").value;
@@ -148,7 +153,6 @@ document.getElementById("game").style.display="block";
 update();
 }
 
-// =====================
 function getChance(){
 let base=(form+experience)/70;
 if(position=="ST") base*=1.6;
@@ -159,8 +163,9 @@ if(difficulty=="extreme") base*=0.3;
 return base;
 }
 
-// =====================
 function playMatch(){
+if(retired) return;
+
 experience+=0.3;
 
 let g=0,a=0;
@@ -183,20 +188,27 @@ value+=(g*30000+a*20000);
 update();
 }
 
-// =====================
 function playSeason(){
+if(retired) return;
+
 for(let i=0;i<34;i++) playMatch();
 
 age++;
 year++;
 
-document.getElementById("log").innerHTML="🏁 Sezon bitti";
+if(age>=retirementAge){
+retired=true;
+document.getElementById("log").innerHTML="🏁 EMEKLİ OLDUN (41 YAŞ)";
+update();
+return;
 }
 
-// =====================
-function nationalMatch(){
+document.getElementById("log").innerHTML="🏁 Sezon bitti";
+update();
+}
 
-if(age<22 || age>35){
+function nationalMatch(){
+if(age<18 || age>35){
 document.getElementById("log").innerHTML="❌ Milli takım yok";
 return;
 }
@@ -208,10 +220,8 @@ document.getElementById("log").innerHTML="🌍 Milli maç oynandı";
 update();
 }
 
-// =====================
 function worldCup(){
-
-if(age<22 || age>35){
+if(age<18 || age>35){
 document.getElementById("log").innerHTML="❌ Kadro dışı";
 return;
 }
@@ -229,29 +239,21 @@ document.getElementById("log").innerHTML="🏆 WC: "+worldCupStage;
 update();
 }
 
-// =====================
-// 💰 TRANSFER SİSTEMİ
-// =====================
 function showOffers(){
-
 offers=[];
-
 for(let i=0;i<3;i++){
 offers.push(clubs[Math.floor(Math.random()*clubs.length)]);
 }
 
 document.getElementById("log").innerHTML=
-`
-💰 TRANSFER TEKLİFLERİ:<br><br>
+`💰 TRANSFER TEKLİFLERİ:<br><br>
 <button onclick="transfer(0)">${offers[0]}</button>
 <button onclick="transfer(1)">${offers[1]}</button>
 <button onclick="transfer(2)">${offers[2]}</button>
-<button onclick="transfer(-1)">❌ Kal</button>
-`;
+<button onclick="transfer(-1)">❌ Kal</button>`;
 }
 
 function transfer(i){
-
 if(i==-1){
 document.getElementById("log").innerHTML="🏠 Kulüpte kaldın";
 return;
@@ -262,26 +264,24 @@ form=6;
 experience+=1;
 
 document.getElementById("log").innerHTML="🔥 TRANSFER OLDUN: "+club;
-
 update();
 }
 
-// =====================
 function update(){
 
 let avg=(ratingSum/matches||0).toFixed(2);
 
 document.getElementById("info").innerHTML=
-`📅 ${year} | 👤 ${player} | 🏟 ${club} | 📍 ${position}`;
+`📅 ${year} | 🎂 ${age} | 👤 ${player} | 🏟 ${club} | 📍 ${position}`;
 
 document.getElementById("stats").innerHTML=
-`⚽ Gol: ${goals}  
-🎯 Asist: ${assists}  
-🏟 Maç: ${matches}  
-⭐ Rating: ${avg}  
-💰 Maaş: ${salary}  
-💎 Değer: ${value}  
-🌍 Milli Gol: ${nationalGoals}  
+`⚽ Gol: ${goals}<br>
+🎯 Asist: ${assists}<br>
+🏟 Maç: ${matches}<br>
+⭐ Rating: ${avg}<br>
+💰 Maaş: ${salary}<br>
+💎 Değer: ${value}<br>
+🌍 Milli Gol: ${nationalGoals}<br>
 🏆 WC: ${worldCupStage}`;
 }
 
